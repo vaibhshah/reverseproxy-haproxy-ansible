@@ -1,0 +1,60 @@
+- hosts: lb
+  vars_prompt:
+  - name: lb_port
+    prompt: "Port No for HaProxy "
+    private: no
+
+
+  tasks:
+  - name: "Installing haproxy"
+    yum:
+     name: "haproxy"
+     state: present
+
+  - name: "Editing LB port number"
+    template:
+     src: "/root/ansiblews/haproxy.cfg"
+     dest: "/etc/haproxy/haproxy.cfg"
+
+  - name: "Starting haproxy service"
+    service:
+     name: "haproxy"
+     state: restarted
+
+  - name: "Stopped firewall service"
+    service:
+     name: "firewalld"
+     state: stopped
+
+- hosts: webservers
+  vars:
+  - web_port: 80
+  tasks:
+  - name: "Installing Webserver"
+    yum:
+     name: "httpd"
+     state: present
+
+  - name: "Installing PHP"
+    yum:
+     name: "php"
+     state: present
+
+  - name: "Copying Webpages"
+    copy:
+     src: "/root/ansiblews/index.php"
+     dest: "/var/www/html"
+
+  - name: "Stopped firewall service"
+    service:
+     name: "firewalld"
+     state: stopped
+
+
+  - name: "Starting httpd service"
+    service:
+     name: "httpd"
+     state: restarted
+
+
+
